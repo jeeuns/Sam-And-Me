@@ -6,9 +6,6 @@ class Room1 extends Phaser.Scene {
     init() {
         console.log('=== ROOM1 INIT ===');
         this.playerSpeed = 100;
-
-        // Door transition state debug
-        this.doorWarningShown = false;
         
         // Hand tracking state
         this.handMovement = { x: 0, y: 0, magnitude: 0 };
@@ -17,17 +14,16 @@ class Room1 extends Phaser.Scene {
         this.dominantHandOpen = false;
         this.useHandTracking = true;
         
+        // SIMPLE INVENTORY: Just store the item type
+        this.heldItemType = null;  // null or 'tape', 'books', 'knife', etc.
+        this.heldItemSprite = null; // Reference to original sprite
+        
         // Interaction state
-        this.boxInteractionTime = 0; // Track hold time for tape/knife
-        this.heldItem = null;
-        this.heldItemSprite = null;
+        this.boxInteractionTime = 0;
         this.nearbyInteractable = null;
-        this.interactionHoldTime = 0;
-        this.requiredHoldTime = 3.0; // seconds for tape/knife actions
         
         // Items in world
         this.interactables = [];
-        this.openBoxes = []; // Track open boxes and their contents
         
         // Tutorial state
         this.tutorialStep = 0;
@@ -145,6 +141,8 @@ class Room1 extends Phaser.Scene {
         this.player = this.physics.add.sprite(spawnX, spawnY, 'player');
         this.player.setDepth(100);
         this.player.setCollideWorldBounds(true);
+
+        this.createInventoryUI();
         
         // Collisions
         this.wallLayers.forEach(layer => {
@@ -184,6 +182,63 @@ class Room1 extends Phaser.Scene {
 
     // COMPLETE WORKING createInteractables METHOD
     // Replace the entire method in Room1.js (starting around line 185)
+
+    createInventoryUI() {
+        // Background box for inventory
+        const cam = this.cameras.main;
+
+        this.inventoryBg = this.add.rectangle(
+            cam.width - 80,
+            80,
+            140,
+            140,
+            0x000000,
+            0.7
+        ).setScrollFactor(0).setDepth(200);
+
+        this.inventoryBg.setFillStyle(0xff0000);
+        
+        // Label
+        this.inventoryLabel = this.add.text(
+            this.cameras.main.width - 80,
+            20,
+            'INVENTORY',
+            {
+                fontSize: '16px',
+                fill: '#ffffff',
+                fontStyle: 'bold'
+            }
+        );
+        this.inventoryLabel.setOrigin(0.5);
+        this.inventoryLabel.setScrollFactor(0);
+        this.inventoryLabel.setDepth(201);
+        
+        // Item display (initially hidden)
+        this.inventorySprite = this.add.sprite(
+            this.cameras.main.width - 80,
+            80,
+            'interactables',
+            0
+        );
+        this.inventorySprite.setScale(3); // Make it bigger
+        this.inventorySprite.setScrollFactor(0);
+        this.inventorySprite.setDepth(201);
+        this.inventorySprite.setVisible(false);
+        
+        // Empty text
+        this.inventoryEmptyText = this.add.text(
+            this.cameras.main.width - 80,
+            80,
+            'EMPTY',
+            {
+                fontSize: '14px',
+                fill: '#888888'
+            }
+        );
+        this.inventoryEmptyText.setOrigin(0.5);
+        this.inventoryEmptyText.setScrollFactor(0);
+        this.inventoryEmptyText.setDepth(201);
+    }
 
     createInteractables(offsetX, offsetY) {
         console.log('=== CREATING INTERACTABLES ===');
@@ -459,23 +514,12 @@ class Room1 extends Phaser.Scene {
 
     update(time, delta) {
         if (!this.player) return;
-        
-        // Reset nearby each frame (IMPORTANT!)
-        this.nearbyInteractable = null;
-        
-        // Player movement
+
         this.updatePlayerMovement();
-        
-        // Interactions (this will set nearbyInteractable via overlap callback)
         this.updateInteractions(delta);
-        
-        // Update held item position (follows player)
-        if (this.heldItemSprite) {
-            this.heldItemSprite.setPosition(
-                this.player.x,
-                this.player.y - 24
-            );
-        }
+
+        // Reset AFTER interactions
+        this.nearbyInteractable = null;
     }
 
     updatePlayerMovement() {
@@ -515,46 +559,45 @@ class Room1 extends Phaser.Scene {
     updateInteractions(delta) {
         const deltaSeconds = delta / 1000;
         
-        // LOG what's happening
+        // Debug logging
         if (this.nearbyInteractable) {
             console.log('📍 Near:', this.nearbyInteractable.itemType, 
-                        '| Held:', this.heldItem ? this.heldItem.itemType : 'nothing',
+                        '| Inventory:', this.heldItemType || 'empty',
                         '| NonDom:', this.nonDominantGrabbing,
                         '| DomOpen:', this.dominantHandOpen);
         }
         
         // CASE 1: Holding item + dominant hand opens = DROP
-        if (this.heldItem && this.dominantHandOpen) {
-            console.log('💧 Dropping item!');
+        if (this.heldItemType && this.dominantHandOpen) {
+            console.log('💧 Dropping item from inventory!');
             this.dropItem();
             return;
         }
         
-        // CASE 2: Near item + not holding anything + non-dominant fist = PICKUP
-        if (this.nearbyInteractable && !this.heldItem && this.nonDominantGrabbing) {
-            console.log('✊ Picking up with non-dominant hand!');
+        // CASE 2: Near item + inventory empty + non-dominant fist = PICKUP
+        if (this.nearbyInteractable && !this.heldItemType && this.nonDominantGrabbing) {
+            console.log('✊ Picking up into inventory!');
             this.pickupItem(this.nearbyInteractable);
             return;
         }
         
         // CASE 3: Holding tape/knife near box = TRANSFORM
-        if (this.heldItem && this.nearbyInteractable) {
-            const heldType = this.heldItem.itemType;
+        if (this.heldItemType && this.nearbyInteractable) {
             const nearType = this.nearbyInteractable.itemType;
             
             // Tape + open_box
-            if (heldType === 'tape' && nearType === 'open_box') {
+            if (this.heldItemType === 'tape' && nearType === 'open_box') {
                 this.boxInteractionTime += deltaSeconds;
-                console.log(`📦 Sealing box: ${this.boxInteractionTime.toFixed(1)}s / 2s`);
+                console.log(`📦 Sealing: ${this.boxInteractionTime.toFixed(1)}s / 2s`);
                 
                 if (this.boxInteractionTime >= 2.0) {
                     this.sealBox(this.nearbyInteractable);
                 }
             }
             // Knife + box
-            else if (heldType === 'knife' && nearType === 'box') {
+            else if (this.heldItemType === 'knife' && nearType === 'box') {
                 this.boxInteractionTime += deltaSeconds;
-                console.log(`🔪 Opening box: ${this.boxInteractionTime.toFixed(1)}s / 2s`);
+                console.log(`🔪 Opening: ${this.boxInteractionTime.toFixed(1)}s / 2s`);
                 
                 if (this.boxInteractionTime >= 2.0) {
                     this.openBox(this.nearbyInteractable);
@@ -739,89 +782,94 @@ class Room1 extends Phaser.Scene {
 
     pickupItem(item) {
         if (!item.canPickup) {
-            console.warn('⚠️ Item cannot be picked up');
+            console.warn('⚠️ Cannot pick up this item');
             return;
         }
         
-        if (this.heldItem) {
-            console.warn('⚠️ Already holding an item!');
+        if (this.heldItemType) {
+            console.warn('⚠️ Inventory full! (Already holding:', this.heldItemType + ')');
             return;
         }
         
-        console.log('✅ PICKING UP:', item.itemType);
+        console.log('✅ PICKED UP:', item.itemType);
         
-        this.heldItem = {
-            itemType: item.itemType,
-            originalSprite: item
-        };
+        // Store item type in inventory
+        this.heldItemType = item.itemType;
+        this.heldItemSprite = item; // Keep reference to original sprite
         
-        // Hide the ground sprite
+        // Hide the item in the world
         item.setVisible(false);
         item.canPickup = false;
         if (item.body) {
             item.body.enable = false;
         }
         
-        // Create sprite above player's head
-        this.heldItemSprite = this.add.sprite(
-            this.player.x,
-            this.player.y - 24,
-            item.texture.key,  // Use same texture
-            item.frame.name    // Use same frame
-        );
-        this.heldItemSprite.setDepth(150);
-        this.heldItemSprite.setScale(1.2);
+        // Update inventory UI
+        this.updateInventoryUI();
         
-        console.log('  Item is now held above player');
+        console.log('  Item stored in inventory');
     }
 
     dropItem() {
-        if (!this.heldItem) return;
+        if (!this.heldItemType) {
+            console.warn('⚠️ Inventory is empty, nothing to drop');
+            return;
+        }
         
-        console.log('✓ Dropping:', this.heldItem.itemType);
+        console.log('✅ DROPPED:', this.heldItemType);
         
-        // Drop at player's current position
-        const originalSprite = this.heldItem.originalSprite;
-        originalSprite.setPosition(this.player.x, this.player.y + 16);
-        originalSprite.setVisible(true);
-        originalSprite.body.enable = true;
+        // Restore item to world at player position
+        const sprite = this.heldItemSprite;
+        sprite.setPosition(this.player.x, this.player.y + 16);
+        sprite.setVisible(true);
+        sprite.canPickup = true;
+        if (sprite.body) {
+            sprite.body.enable = true;
+        }
         
-        // Remove held sprite
-        this.heldItemSprite.destroy();
+        // Clear inventory
+        this.heldItemType = null;
         this.heldItemSprite = null;
-        this.heldItem = null;
+        
+        // Update inventory UI
+        this.updateInventoryUI();
+        
+        console.log('  Item dropped at player position');
     }
 
     sealBox(box) {
-        console.log('✓ Sealing box with tape');
+        console.log('✅ SEALING BOX with tape');
         
-        // Instead of setFrame(), we need to swap the sprite
-        // Find the GID for sealed box in your tileset
-        // For now, just change the itemType
+        // Change box type
         box.itemType = 'box';
         
-        // Visual feedback - you may need to replace the sprite entirely
-        // or update based on your tileset structure
+        // Try to change visual (may need adjustment based on your tileset)
+        // For now, just log it
+        console.log('  Box sealed (visual update may be needed)');
         
-        // Use up the tape
-        if (this.heldItemSprite) {
-            this.heldItemSprite.destroy();
-            this.heldItemSprite = null;
-        }
-        this.heldItem.originalSprite.destroy();
-        this.heldItem = null;
+        // Use up the tape - remove from inventory
+        this.heldItemType = null;
+        this.heldItemSprite.destroy(); // Remove tape from world entirely
+        this.heldItemSprite = null;
+        
+        // Update UI
+        this.updateInventoryUI();
         
         this.boxInteractionTime = 0;
-        console.log('  Box sealed (visual update needed)');
     }
 
     openBox(box) {
-        console.log('✓ Opening box with knife');
+        console.log('✅ OPENING BOX with knife');
         
+        // Change box type
         box.itemType = 'open_box';
         
+        // Visual update
+        console.log('  Box opened (visual update may be needed)');
+        
+        // Keep the knife in inventory (don't use it up)
+        
         this.boxInteractionTime = 0;
-        console.log('  Box opened (visual update needed)');
     }
 
     storeItemInBox(box) {
@@ -879,6 +927,29 @@ class Room1 extends Phaser.Scene {
         lines.push(`Position: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`);
         
         this.statusText.setText(lines);
+    }
+
+    updateInventoryUI() {
+        if (this.heldItemType) {
+            // Show item in inventory
+            this.inventorySprite.setVisible(true);
+            this.inventoryEmptyText.setVisible(false);
+            
+            // Set correct frame based on item type
+            const sprite = this.heldItemSprite;
+            if (sprite && sprite.texture && sprite.frame) {
+                this.inventorySprite.setTexture(sprite.texture.key);
+                this.inventorySprite.setFrame(sprite.frame.name);
+            }
+            
+            console.log('📦 Inventory now holds:', this.heldItemType);
+        } else {
+            // Show empty
+            this.inventorySprite.setVisible(false);
+            this.inventoryEmptyText.setVisible(true);
+            
+            console.log('📦 Inventory is empty');
+        }
     }
 
     checkDoorTransition() {
