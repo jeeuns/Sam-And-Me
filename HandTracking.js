@@ -21,7 +21,7 @@ class HandTracking {
         this.movement = { x: 0, y: 0, magnitude: 0 };
         
         // Gesture detection
-        this.bothHandsGrabbing = false;
+        //this.bothHandsGrabbing = false;
         this.nonDominantGrabbing = false;
         this.dominantHandOpen = false;
         
@@ -276,10 +276,10 @@ class HandTracking {
         console.log('  Right detected:', this.handData.right.detected, 
                     'grabbing:', this.handData.right.grabbing);
         
-        // Both hands grabbing
-        this.bothHandsGrabbing = 
-            this.handData.left.detected && this.handData.left.grabbing &&
-            this.handData.right.detected && this.handData.right.grabbing;
+        // // Both hands grabbing
+        // this.bothHandsGrabbing = 
+        //     this.handData.left.detected && this.handData.left.grabbing &&
+        //     this.handData.right.detected && this.handData.right.grabbing;
         
         // Non-dominant hand grabbing
         const nonDominant = this.dominantHand === 'right' ? 'left' : 'right';
@@ -300,14 +300,14 @@ class HandTracking {
             this.dominantHandOpen = false;
         }
         
-        console.log('  → bothHandsGrabbing:', this.bothHandsGrabbing);
+        // console.log('  → bothHandsGrabbing:', this.bothHandsGrabbing);
         console.log('  → dominantHandOpen:', this.dominantHandOpen);
         
         // Call the callback
         if (this.onGestureChange) {
             console.log('  Calling onGestureChange callback');
             this.onGestureChange({
-                bothHands: this.bothHandsGrabbing,
+                //bothHands: this.bothHandsGrabbing,
                 nonDominant: this.nonDominantGrabbing,
                 dominantOpen: this.dominantHandOpen
             });
