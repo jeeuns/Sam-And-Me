@@ -31,7 +31,7 @@ class EndScreen extends Phaser.Scene {
     bg.setScale(Math.min(scaleX, scaleY));
 
     // Big title (optional, keep it minimal like start screen)
-    const title = this.add.text(W / 2, 110, 'YOU DID IT!', {
+    const title = this.add.text(W / 2, 110, 'Thank You for Playing "Sam and Me"', {
       fontSize: '64px',
       fill: '#ffffff',
       fontStyle: 'bold',
@@ -41,7 +41,7 @@ class EndScreen extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Subtitle / message
-    this.add.text(W / 2, 190, 'All rooms packed. Box sealed. Time to go!', {
+    this.add.text(W / 2, 190, 'Your childhood home is no more, it\'s time to go', {
       fontSize: '24px',
       fill: '#ffffff',
       stroke: '#000000',

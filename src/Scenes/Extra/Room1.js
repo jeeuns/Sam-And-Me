@@ -1,10 +1,10 @@
-class Room2 extends Phaser.Scene {
+class Room1 extends Phaser.Scene {
     constructor() {
-        super("room2");
+        super("room1");
     }
 
     init() {
-        console.log('=== ROOM2 INIT ===');
+        console.log('=== ROOM1 INIT ===');
 
         this.tutorialStep = 0;
         this.tutorialComplete = false;
@@ -33,7 +33,7 @@ class Room2 extends Phaser.Scene {
         // Room goal state
         this.openBox = null;          // we’ll store a reference to the open_box sprite
         this.itemsStored = 0;
-        this.maxItemsToStore = 6;
+        this.maxItemsToStore = 3;
         this.boxSealed = false;
 
         // Items in world
@@ -47,15 +47,15 @@ class Room2 extends Phaser.Scene {
     }
 
     create() {
-        console.log('=== ROOM2 CREATE STARTED ===');
+        console.log('ROOM1 CREATE STARTED');
 
         showHandTrackingUI(); // SHOW UI
 
         // Background
-        this.cameras.main.setBackgroundColor('#000000ff');
+        this.cameras.main.setBackgroundColor('#4e1472ff');
 
         // Create tilemap
-        this.map = this.make.tilemap({ key: 'Room2' });
+        this.map = this.make.tilemap({ key: 'Room1' });
         console.log('Map size:', this.map.width, 'x', this.map.height, 'tiles');
 
         // Add tilesets
@@ -221,7 +221,7 @@ class Room2 extends Phaser.Scene {
             window.handTracker.onCursorHold = null;
         }
 
-        console.log('=== ROOM2 CREATE COMPLETE ===');
+        console.log('=== ROOM1 CREATE COMPLETE ===');
     }
 
 createInventoryUI() {
@@ -345,8 +345,8 @@ createInventoryUI() {
             // Shrink open_box collision body to its inner area so items dropped
             // near the edge don't get trapped on top of it
             if (itemType === 'open_box') {
-                sprite.setSize(16, 16);
-                sprite.setOffset(0, 0);
+                sprite.setSize(8, 8);
+                sprite.setOffset(4, 8);
                 sprite.refreshBody();
             }
 
@@ -447,18 +447,13 @@ createInventoryUI() {
     }
 
     handleInteractableOverlap(player, interactable) {
+        // Prefer a pickupable interactable over a non-pickupable one (e.g. books over tape
+        // when books are pickupable and tape isn't yet). This prevents adjacent items from
+        // stealing the nearbyInteractable slot when they aren't actionable.
         if (!this.nearbyInteractable) {
             this.nearbyInteractable = interactable;
-        } else if (interactable.itemType === 'open_box' && this.heldItemType === 'tape') {
-            // When holding tape, always prefer the open_box so the seal timer can fire.
-            this.nearbyInteractable = interactable;
         } else if (interactable.canPickup && !this.nearbyInteractable.canPickup) {
-            // Prefer pickupable items, but don't displace the open_box when holding tape.
-            const holdingTape = this.heldItemType === 'tape';
-            const currentIsBox = this.nearbyInteractable.itemType === 'open_box';
-            if (!(holdingTape && currentIsBox)) {
-                this.nearbyInteractable = interactable;
-            }
+            this.nearbyInteractable = interactable;
         }
     }
 
@@ -582,11 +577,10 @@ createUI() {
 
     updateTutorial() {
         const tutorials = [
-            "Wow, your Mother's room is a mess.",
-            "Pick up BOOKS with your non-dominant fist. Carry them to the OPEN BOX.",
-            "Open your non-dominant fist near the box to store the books.",
-            "Once all books are stored, pick up the TAPE and seal the box.",
-            "Box sealed! Head to the DOOR to continue."
+            "Welcome to Room 1! Move around using your dominant hand.",
+            "Approach the TAPE on the floor. Make a FIST with your NON-dominant hand to pick it up.",
+            "Good! Now find the OPEN BOX. Hold the TAPE near it for 3 seconds to seal it.",
+            "Great job! You may exit to the next room."
         ];
         
         if (this.tutorialStep < tutorials.length) {
@@ -705,18 +699,9 @@ createUI() {
             }
         }
 
-        // --- TAPE THE BOX (distance-based, not overlap-based) ---
-        // Use a direct distance check so the timer isn't reset by missed overlap frames.
-        const TAPE_RADIUS = 32;
-        const nearBox = openBox && this.heldItemType === 'tape' && !this.boxSealed;
-        const inTapeRange = nearBox && (
-            Phaser.Math.Distance.Between(
-                this.player.x, this.player.y,
-                openBox.x, openBox.y
-            ) < TAPE_RADIUS
-        );
-
-        if (inTapeRange) {
+        // --- TAPE THE BOX (hold near open_box) ---
+        if (!this.boxSealed && openBox && near && near === openBox && this.heldItemType === 'tape') {
+            // only allow taping after box is full
             if (this.itemsStored >= this.maxItemsToStore) {
                 this.boxInteractionTime += deltaSeconds;
 
@@ -730,13 +715,9 @@ createUI() {
                 }
             } else {
                 this.boxInteractionTime = 0;
-                this.interactionPrompt.setText('Fill the box with books first!');
-                this.interactionPrompt.setVisible(true);
             }
         } else {
-            if (this.boxInteractionTime > 0) {
-                this.boxInteractionTime = 0;
-            }
+            this.boxInteractionTime = 0;
         }
 
         // Save previous gesture states
@@ -1090,8 +1071,8 @@ createUI() {
     checkDoorTransition() {
         if (!this.doorLayer) return;
 
-        // Only allow exit once box is sealed
-        if (!this.boxSealed) return;
+        // Only allow exit once sealed
+        // if (!this.boxSealed) return;
 
         const playerTileX = Math.floor((this.player.x - this.doorLayer.x) / this.map.tileWidth);
         const playerTileY = Math.floor((this.player.y - this.doorLayer.y) / this.map.tileHeight);
@@ -1099,11 +1080,11 @@ createUI() {
         const tile = this.doorLayer.getTileAt(playerTileX, playerTileY);
 
         if (tile && tile.index > 0) {
-            console.log('Door exit → cutScene2');
+            console.log('Door exit → cutScene1');
             if (!this.doorTransitioning) {
                 this.doorTransitioning = true;
                 this.sound.play('sfx_nextscene', { volume: 1.0 });
-                this.time.delayedCall(500, () => this.scene.start('cutScene2'));
+                this.time.delayedCall(500, () => this.scene.start('cutScene1'));
             }
         }
     }

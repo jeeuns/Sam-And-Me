@@ -1,19 +1,15 @@
-class Room2 extends Phaser.Scene {
+class Room3 extends Phaser.Scene {
     constructor() {
-        super("room2");
+        super("room3");
     }
 
     init() {
-        console.log('=== ROOM2 INIT ===');
-
-        this.tutorialStep = 0;
-        this.tutorialComplete = false;
+        console.log('=== ROOM3 INIT ===');
 
         this.playerSpeed = 60;
 
         // Hand tracking state
         this.handMovement = { x: 0, y: 0, magnitude: 0 };
-        //this.bothHandsGrabbing = false;
         this.nonDominantGrabbing = false;
         this.dominantHandOpen = false;
         this.useHandTracking = true;
@@ -23,31 +19,35 @@ class Room2 extends Phaser.Scene {
         this.prevDominantHandOpen = false;
 
         // SIMPLE INVENTORY
-        this.heldItemType = null;     // e.g. 'books', 'tape'
-        this.heldItemSprite = null;   // reference to original sprite
+        this.heldItemType = null;
+        this.heldItemSprite = null;
 
         // Interaction state
         this.boxInteractionTime = 0;
         this.nearbyInteractable = null;
 
         // Room goal state
-        this.openBox = null;          // we’ll store a reference to the open_box sprite
+        this.openBox = null;
         this.itemsStored = 0;
-        this.maxItemsToStore = 6;
+        this.maxItemsToStore = 8;
         this.boxSealed = false;
+
+        this.playerDirection = 'down';
+        this.isMoving = false;
 
         // Items in world
         this.interactables = [];
-        
-        this.playerDirection = 'down';
-        this.isMoving = false;
+
+        // Tutorial / gating
+        this.tutorialStep = 0;
+        this.tutorialComplete = false;
 
         // Transition guard
         this.doorTransitioning = false;
     }
 
     create() {
-        console.log('=== ROOM2 CREATE STARTED ===');
+        console.log('=== ROOM3 CREATE STARTED ===');
 
         showHandTrackingUI(); // SHOW UI
 
@@ -55,7 +55,7 @@ class Room2 extends Phaser.Scene {
         this.cameras.main.setBackgroundColor('#000000ff');
 
         // Create tilemap
-        this.map = this.make.tilemap({ key: 'Room2' });
+        this.map = this.make.tilemap({ key: 'Room3' });
         console.log('Map size:', this.map.width, 'x', this.map.height, 'tiles');
 
         // Add tilesets
@@ -88,7 +88,7 @@ class Room2 extends Phaser.Scene {
         const viewW = this.cameras.main.width / this.cameras.main.zoom;
         const viewH = this.cameras.main.height / this.cameras.main.zoom;
 
-        // If the map is smaller than the view, pad the world so the map can be centered
+        // Pad world if map is smaller than view
         const padX = Math.max(0, (viewW - mapW) / 2);
         const padY = Math.max(0, (viewH - mapH) / 2);
 
@@ -149,9 +149,9 @@ class Room2 extends Phaser.Scene {
         }
 
         this.player = this.physics.add.sprite(spawnX, spawnY, 'down1');
+        this.player.play('idle');
         this.player.setDepth(100);
         this.player.setCollideWorldBounds(true);
-        this.player.play('idle'); //play idle anim after spawning
 
         // Collisions
         this.wallLayers.forEach(layer => {
@@ -161,7 +161,7 @@ class Room2 extends Phaser.Scene {
         // Create interactables
         this.createInteractables(offsetX, offsetY);
 
-        // Main camera follows player (zoomed gameplay)
+        // Main camera follows player
         this.cameras.main.startFollow(this.player, true, 0.12, 0.12);
         this.cameras.main.setZoom(SCALE);
 
@@ -170,10 +170,10 @@ class Room2 extends Phaser.Scene {
         this.uiCamera.setScroll(0, 0);
         this.uiCamera.setZoom(1);
 
-        // Create inventory UI on the UI camera
+        // Create inventory UI
         this.createInventoryUI();
 
-        // Make cameras ignore the opposite layers
+        // Make cameras ignore opposite layers
         this.cameras.main.ignore([
             this.inventoryBg,
             this.inventoryLabel,
@@ -207,11 +207,9 @@ class Room2 extends Phaser.Scene {
         this.input.keyboard.on('keydown-SIX',   () => this.scene.start('cutScene3'));
         this.input.keyboard.on('keydown-SEVEN',   () => this.scene.start('endScreen'));
 
-        // UI text / prompts (also should be on UI camera)
+        // UI
         this.createUI();
-        // Ensure UI camera renders these too:
-        this.cameras.main.ignore([this.tutorialText, this.statusText, this.interactionPrompt, this.holdProgressBar]);
-        this.uiCamera.ignore([]); // no-op; just keeping it explicit
+        this.cameras.main.ignore([this.tutorialBg, this.tutorialLabel, this.tutorialDivider, this.tutorialText, this.statusText, this.interactionPrompt, this.holdProgressBar]);
 
         // Hand tracking
         this.setupHandTracking();
@@ -221,10 +219,10 @@ class Room2 extends Phaser.Scene {
             window.handTracker.onCursorHold = null;
         }
 
-        console.log('=== ROOM2 CREATE COMPLETE ===');
+        console.log('=== ROOM3 CREATE COMPLETE ===');
     }
 
-createInventoryUI() {
+    createInventoryUI() {
         const W = this.scale.width;
         const H = this.scale.height;
 
@@ -342,19 +340,10 @@ createInventoryUI() {
             sprite.setOrigin(0, 1);
             sprite.setDepth(50);
 
-            // Shrink open_box collision body to its inner area so items dropped
-            // near the edge don't get trapped on top of it
-            if (itemType === 'open_box') {
-                sprite.setSize(16, 16);
-                sprite.setOffset(0, 0);
-                sprite.refreshBody();
-            }
-
             sprite.itemType = itemType;
             sprite.itemId = obj.id;
             sprite.isBox = (itemType === 'open_box' || itemType === 'box');
 
-            // ✅ Room 1 pickup rules
             sprite.canPickup = this.isPickupableType(itemType);
 
             // Storage metadata for the open box
@@ -387,82 +376,46 @@ createInventoryUI() {
             'interactables': 'interactables',
             'interactables1': 'interactables'  // alias in case tmj uses this name
         };
-        
+
         const key = mapping[tilesetName];
         if (!key) {
             console.warn(`⚠️ Unknown tileset "${tilesetName}", using as-is`);
             return tilesetName;
         }
-        
+
         return key;
     }
 
-    //HELPER FUNCTION
-    getItemTypeFromTiledObject(obj) {
-        // Preferred: object custom property type="tape"/"books"/...
-        let type = 'unknown';
-
-        if (obj.properties?.length) {
-            // Standard schema: property named "type"
-            const pType = obj.properties.find(p => p.name === 'type');
-            if (pType?.value) {
-            return String(pType.value).trim();
-            }
-
-            // Fallback schema you currently have in "interact":
-            // property name is the type (e.g., "tape") and value is "".
-            // So if we see a known type as a property name, use it.
-            const known = new Set(['open_box', 'box', 'tape', 'books', 'knife']);
-            for (const p of obj.properties) {
-            if (known.has(String(p.name).trim())) {
-                return String(p.name).trim();
-            }
-            }
-        }
-
-        // Fallback: object name / built-in type fields
-        if (obj.name) type = String(obj.name).trim();
-        if (type === 'unknown' && obj.type) type = String(obj.type).trim();
-
-        return type;
-    }
-
     getFrameForType(type) {
-        // interactables1.png has 4 frames (0-3)
         const frameMap = {
-            'open_box': 0,  // Frame 0: open box
-            'box': 1,       // Frame 1: sealed box
-            'tape': 2,      // Frame 2: tape
-            'books': 3,     // Frame 3: books
-            'knife': 4      // Frame 4: knife (if you add it)
+            'open_box': 0,
+            'box': 1,
+            'tape': 2,
+            'books': 3,
+            'knife': 4
         };
-        
+
         const frame = frameMap[type];
         if (frame === undefined) {
             console.warn(`Unknown item type: "${type}", using frame 0`);
             return 0;
         }
-        
+
         return frame;
     }
 
     handleInteractableOverlap(player, interactable) {
+        // Prefer a pickupable interactable over a non-pickupable one (e.g. books over tape
+        // when books are pickupable and tape isn't yet). This prevents adjacent items from
+        // stealing the nearbyInteractable slot when they aren't actionable.
         if (!this.nearbyInteractable) {
             this.nearbyInteractable = interactable;
-        } else if (interactable.itemType === 'open_box' && this.heldItemType === 'tape') {
-            // When holding tape, always prefer the open_box so the seal timer can fire.
-            this.nearbyInteractable = interactable;
         } else if (interactable.canPickup && !this.nearbyInteractable.canPickup) {
-            // Prefer pickupable items, but don't displace the open_box when holding tape.
-            const holdingTape = this.heldItemType === 'tape';
-            const currentIsBox = this.nearbyInteractable.itemType === 'open_box';
-            if (!(holdingTape && currentIsBox)) {
-                this.nearbyInteractable = interactable;
-            }
+            this.nearbyInteractable = interactable;
         }
     }
 
-createUI() {
+    createUI() {
         const W = this.scale.width;
         const H = this.scale.height;
 
@@ -514,7 +467,7 @@ createUI() {
         this.interactionPrompt = this.add.text(
             W / 2, H - 36, '',
             {
-                fontSize: '24px',
+                fontSize: '20px',
                 fill: '#ffff00',
                 backgroundColor: '#000000bb',
                 padding: { x: 16, y: 8 },
@@ -551,44 +504,40 @@ createUI() {
             this.useHandTracking = false;
             return;
         }
-        
+
         console.log('=== HAND TRACKING SETUP ===');
         console.log('  Dominant hand:', window.handTracker.dominantHand);
-        
+
         // Movement callback
         window.handTracker.onHandUpdate = (movement) => {
             this.handMovement = movement;
         };
-        
-        // Gesture callback with LOGGING
+
+        // Gesture callback
         window.handTracker.onGestureChange = (gestures) => {
-            //this.bothHandsGrabbing = gestures.bothHands;
             this.nonDominantGrabbing = gestures.nonDominant;
             this.dominantHandOpen = gestures.dominantOpen;
-            
-            // LOG EVERY GESTURE CHANGE
-            //if (gestures.nonDominant || gestures.bothHands || gestures.dominantOpen) {
+
             if (gestures.nonDominant || gestures.dominantOpen) {
                 console.log('GESTURE:', {
-                    nonDom: gestures.nonDominant, //when nonDom = true (closed fist)
-                    //both: gestures.bothHands,
+                    nonDom: gestures.nonDominant,
                     domOpen: gestures.dominantOpen
                 });
             }
         };
-        
+
         console.log('✓ Callbacks configured');
     }
 
     updateTutorial() {
         const tutorials = [
-            "Wow, your Mother's room is a mess.",
+            "Finally, the last room! You can't wait to take a break",
             "Pick up BOOKS with your non-dominant fist. Carry them to the OPEN BOX.",
             "Open your non-dominant fist near the box to store the books.",
             "Once all books are stored, pick up the TAPE and seal the box.",
-            "Box sealed! Head to the DOOR to continue."
+            "Box sealed! Head to the DOOR — you're almost done!"
         ];
-        
+
         if (this.tutorialStep < tutorials.length) {
             this.tutorialText.setText(tutorials[this.tutorialStep]);
         } else {
@@ -602,11 +551,9 @@ createUI() {
 
         this.updatePlayerMovement();
         this.updateInteractions(delta);
-
-        // ✅ allow door exit once conditions met
         this.checkDoorTransition();
 
-        // clear AFTER logic
+        // Clear nearby interactable after logic runs
         this.nearbyInteractable = null;
     }
 
@@ -679,8 +626,6 @@ createUI() {
             this.nonDominantGrabbing && !this.prevNonDominantGrabbing;
 
         // DROP/STORE: non-dominant hand opens from fist (falling edge)
-        // Symmetric inverse of pickup — dominant hand state is irrelevant,
-        // so opening both hands simultaneously never accidentally drops.
         const nonDomJustOpened =
             !this.nonDominantGrabbing && this.prevNonDominantGrabbing;
 
@@ -694,29 +639,17 @@ createUI() {
             }
         }
 
-        // --- STORE OR DROP (edge: non-dominant fist opens) ---
+        // --- STORE OR DROP (edge: non-dominant hand opens) ---
         if (this.heldItemType && nonDomJustOpened) {
-            // If near open_box: store books into box
             if (openBox && near && near === openBox && this.heldItemType === 'books') {
                 this.storeItemInBox(openBox);
             } else {
-                // otherwise normal drop
                 this.dropItem();
             }
         }
 
-        // --- TAPE THE BOX (distance-based, not overlap-based) ---
-        // Use a direct distance check so the timer isn't reset by missed overlap frames.
-        const TAPE_RADIUS = 32;
-        const nearBox = openBox && this.heldItemType === 'tape' && !this.boxSealed;
-        const inTapeRange = nearBox && (
-            Phaser.Math.Distance.Between(
-                this.player.x, this.player.y,
-                openBox.x, openBox.y
-            ) < TAPE_RADIUS
-        );
-
-        if (inTapeRange) {
+        // --- TAPE THE BOX (hold near open_box) ---
+        if (!this.boxSealed && openBox && near && near === openBox && this.heldItemType === 'tape') {
             if (this.itemsStored >= this.maxItemsToStore) {
                 this.boxInteractionTime += deltaSeconds;
 
@@ -730,114 +663,14 @@ createUI() {
                 }
             } else {
                 this.boxInteractionTime = 0;
-                this.interactionPrompt.setText('Fill the box with books first!');
-                this.interactionPrompt.setVisible(true);
             }
         } else {
-            if (this.boxInteractionTime > 0) {
-                this.boxInteractionTime = 0;
-            }
+            this.boxInteractionTime = 0;
         }
 
         // Save previous gesture states
         this.prevNonDominantGrabbing = this.nonDominantGrabbing;
         this.prevDominantHandOpen = this.dominantHandOpen;
-    }
-
-    handleHeldItemInteraction(nearbyItem, deltaSeconds) {
-        const heldType = this.heldItem.itemType;
-        const nearbyType = nearbyItem.itemType;
-        
-        // CASE A: Holding TAPE near OPEN BOX → seal it
-        if (heldType === 'tape' && nearbyType === 'open_box') {
-            this.interactionPrompt.setText('Hold for 3 seconds to SEAL box with tape');
-            this.interactionPrompt.setVisible(true);
-            
-            this.interactionHoldTime += deltaSeconds;
-            this.drawHoldProgress(this.interactionHoldTime / this.requiredHoldTime);
-            
-            if (this.interactionHoldTime >= this.requiredHoldTime) {
-                this.sealBox(nearbyItem);
-                this.interactionHoldTime = 0;
-                this.holdProgressBar.clear();
-            }
-        }
-        // CASE B: Holding KNIFE near SEALED BOX → open it
-        else if (heldType === 'knife' && nearbyType === 'box') {
-            this.interactionPrompt.setText('Hold for 3 seconds to OPEN box with knife');
-            this.interactionPrompt.setVisible(true);
-            
-            this.interactionHoldTime += deltaSeconds;
-            this.drawHoldProgress(this.interactionHoldTime / this.requiredHoldTime);
-            
-            if (this.interactionHoldTime >= this.requiredHoldTime) {
-                this.openBox(nearbyItem);
-                this.interactionHoldTime = 0;
-                this.holdProgressBar.clear();
-            }
-        }
-        // CASE C: Holding other item near OPEN BOX → store it
-        else if (nearbyType === 'open_box' && heldType !== 'tape' && heldType !== 'knife') {
-            if (nearbyItem.storedItems.length < nearbyItem.maxStorage) {
-                this.interactionPrompt.setText(`Open hand to store ${heldType.toUpperCase()} in box (${nearbyItem.storedItems.length}/${nearbyItem.maxStorage})`);
-                this.interactionPrompt.setVisible(true);
-                
-                if (this.dominantHandOpen) {
-                    this.storeItemInBox(nearbyItem);
-                }
-            } else {
-                this.interactionPrompt.setText('Box is FULL!');
-                this.interactionPrompt.setVisible(true);
-            }
-        }
-        // CASE D: Not near anything special → can drop
-        else {
-            this.interactionPrompt.setText(`Open hand to DROP ${heldType.toUpperCase()}`);
-            this.interactionPrompt.setVisible(true);
-            this.interactionHoldTime = 0;
-            this.holdProgressBar.clear();
-        }
-    }
-
-    handleBoxInteraction(box, deltaSeconds) {
-        const heldType = this.heldItem.itemType;
-        const boxType = box.itemType;
-        
-        // Tape + open_box = seal it
-        if (heldType === 'tape' && boxType === 'open_box') {
-            this.boxInteractionTime += deltaSeconds;
-            
-            if (this.boxInteractionTime >= 2.0) {
-                // Transform to sealed box
-                box.setFrame(this.getFrameForType('box'));
-                box.itemType = 'box';
-                
-                // Use up the tape
-                this.heldItemSprite.destroy();
-                this.heldItemSprite = null;
-                this.heldItem.originalSprite.destroy();
-                this.heldItem = null;
-                
-                this.boxInteractionTime = 0;
-                console.log('✓ Box sealed with tape');
-            }
-        }
-        // Knife + box = open it
-        else if (heldType === 'knife' && boxType === 'box') {
-            this.boxInteractionTime += deltaSeconds;
-            
-            if (this.boxInteractionTime >= 2.0) {
-                // Transform to open box
-                box.setFrame(this.getFrameForType('open_box'));
-                box.itemType = 'open_box';
-                
-                // Keep the knife
-                this.boxInteractionTime = 0;
-                console.log('✓ Box opened with knife');
-            }
-        } else {
-            this.boxInteractionTime = 0;
-        }
     }
 
     isPickupableType(type) {
@@ -850,12 +683,9 @@ createUI() {
             return (this.itemsStored >= this.maxItemsToStore) && !this.boxSealed;
         }
 
-        // Everything else: not pickupable in Room 1
         return false;
     }
 
-    // Re-evaluate canPickup for all interactables — must be called whenever
-    // game state changes (e.g. after storing an item, so tape becomes pickupable)
     refreshPickupStates() {
         for (const sprite of this.interactables) {
             if (sprite.active) {
@@ -917,24 +747,6 @@ createUI() {
             }
         }
 
-        // Check that the drop position doesn't land on top of an open_box
-        // (16px tile, use a small radius check around the drop point)
-        const DROP_BLOCK_RADIUS = 12;
-        for (const interactable of this.interactables) {
-            if (interactable.itemType === 'open_box' && interactable.active) {
-                const dx = dropX - interactable.x;
-                const dy = dropY - interactable.y;
-                if (Math.sqrt(dx * dx + dy * dy) < DROP_BLOCK_RADIUS) {
-                    this.interactionPrompt.setText("Can't drop on the box!");
-                    this.interactionPrompt.setVisible(true);
-                    this.time.delayedCall(800, () => {
-                        if (this.interactionPrompt) this.interactionPrompt.setVisible(false);
-                    });
-                    return;
-                }
-            }
-        }
-
         // Position is clear — drop the item
         sprite.setPosition(dropX, dropY);
         sprite.setVisible(true);
@@ -956,13 +768,11 @@ createUI() {
         if (this.heldItemType !== 'tape') return;
         if (this.itemsStored < this.maxItemsToStore) return;
 
-        // Change box type + visuals
         box.itemType = 'box';
         box.setFrame(this.getFrameForType('box'));
 
         this.boxSealed = true;
 
-        // Use up the tape
         if (this.heldItemSprite) this.heldItemSprite.destroy();
         this.heldItemType = null;
         this.heldItemSprite = null;
@@ -979,20 +789,6 @@ createUI() {
         this.interactionPrompt.setVisible(true);
     }
 
-    openBox(box) {
-        console.log('✅ OPENING BOX with knife');
-        
-        // Change box type
-        box.itemType = 'open_box';
-        
-        // Visual update
-        console.log('  Box opened (visual update may be needed)');
-        
-        // Keep the knife in inventory (don't use it up)
-        
-        this.boxInteractionTime = 0;
-    }
-
     storeItemInBox(box) {
         if (!box || box.itemType !== 'open_box') return;
         if (this.heldItemType !== 'books') return;
@@ -1003,16 +799,13 @@ createUI() {
             return;
         }
 
-        // Add to storage
         box.storedItems.push(this.heldItemType);
         this.itemsStored = box.storedItems.length;
 
-        // Destroy held world sprite (books disappear)
         if (this.heldItemSprite) {
             this.heldItemSprite.destroy();
         }
 
-        // Clear inventory
         this.heldItemType = null;
         this.heldItemSprite = null;
 
@@ -1028,45 +821,6 @@ createUI() {
         });
     }
 
-    drawHoldProgress(progress) {
-        this.holdProgressBar.clear();
-        
-        const barWidth = 200;
-        const barHeight = 20;
-        const barX = this.cameras.main.centerX - barWidth / 2;
-        const barY = this.cameras.main.height - 100;
-        
-        // Background
-        this.holdProgressBar.fillStyle(0x000000, 0.7);
-        this.holdProgressBar.fillRect(barX, barY, barWidth, barHeight);
-        
-        // Progress
-        this.holdProgressBar.fillStyle(0x27ae60);
-        this.holdProgressBar.fillRect(barX, barY, barWidth * Math.min(progress, 1.0), barHeight);
-        
-        // Border
-        this.holdProgressBar.lineStyle(2, 0xffffff);
-        this.holdProgressBar.strokeRect(barX, barY, barWidth, barHeight);
-    }
-
-    updateStatusDisplay() {
-        const lines = [];
-        
-        if (this.useHandTracking && window.handTracker?.initialized) {
-            lines.push('HAND TRACKING MODE');
-        } else {
-            lines.push('KEYBOARD MODE (WASD)');
-        }
-        
-        if (this.heldItem) {
-            lines.push(`Holding: ${this.heldItem.itemType.toUpperCase()}`);
-        }
-        
-        lines.push(`Position: ${Math.round(this.player.x)}, ${Math.round(this.player.y)}`);
-        
-        this.statusText.setText(lines);
-    }
-
     updateInventoryUI() {
         if (!this.inventorySprite || !this.inventoryEmptyText) return;
 
@@ -1074,7 +828,6 @@ createUI() {
             this.inventorySprite.setVisible(true);
             this.inventoryEmptyText.setVisible(false);
 
-            // Show the same texture/frame as the world sprite
             this.inventorySprite.setTexture(this.heldItemSprite.texture.key);
             this.inventorySprite.setFrame(this.heldItemSprite.frame.name);
 
@@ -1099,11 +852,11 @@ createUI() {
         const tile = this.doorLayer.getTileAt(playerTileX, playerTileY);
 
         if (tile && tile.index > 0) {
-            console.log('Door exit → cutScene2');
+            console.log('Door exit → cutScene3');
             if (!this.doorTransitioning) {
                 this.doorTransitioning = true;
                 this.sound.play('sfx_nextscene', { volume: 1.0 });
-                this.time.delayedCall(500, () => this.scene.start('cutScene2'));
+                this.time.delayedCall(500, () => this.scene.start('cutScene3'));
             }
         }
     }

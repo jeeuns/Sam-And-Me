@@ -345,8 +345,8 @@ createInventoryUI() {
             // Shrink open_box collision body to its inner area so items dropped
             // near the edge don't get trapped on top of it
             if (itemType === 'open_box') {
-                sprite.setSize(16, 16);
-                sprite.setOffset(0, 0);
+                sprite.setSize(8, 8);
+                sprite.setOffset(4, 8);
                 sprite.refreshBody();
             }
 
@@ -447,18 +447,13 @@ createInventoryUI() {
     }
 
     handleInteractableOverlap(player, interactable) {
+        // Prefer a pickupable interactable over a non-pickupable one (e.g. books over tape
+        // when books are pickupable and tape isn't yet). This prevents adjacent items from
+        // stealing the nearbyInteractable slot when they aren't actionable.
         if (!this.nearbyInteractable) {
             this.nearbyInteractable = interactable;
-        } else if (interactable.itemType === 'open_box' && this.heldItemType === 'tape') {
-            // When holding tape, always prefer the open_box so the seal timer can fire.
-            this.nearbyInteractable = interactable;
         } else if (interactable.canPickup && !this.nearbyInteractable.canPickup) {
-            // Prefer pickupable items, but don't displace the open_box when holding tape.
-            const holdingTape = this.heldItemType === 'tape';
-            const currentIsBox = this.nearbyInteractable.itemType === 'open_box';
-            if (!(holdingTape && currentIsBox)) {
-                this.nearbyInteractable = interactable;
-            }
+            this.nearbyInteractable = interactable;
         }
     }
 
@@ -705,18 +700,9 @@ createUI() {
             }
         }
 
-        // --- TAPE THE BOX (distance-based, not overlap-based) ---
-        // Use a direct distance check so the timer isn't reset by missed overlap frames.
-        const TAPE_RADIUS = 32;
-        const nearBox = openBox && this.heldItemType === 'tape' && !this.boxSealed;
-        const inTapeRange = nearBox && (
-            Phaser.Math.Distance.Between(
-                this.player.x, this.player.y,
-                openBox.x, openBox.y
-            ) < TAPE_RADIUS
-        );
-
-        if (inTapeRange) {
+        // --- TAPE THE BOX (hold near open_box) ---
+        if (!this.boxSealed && openBox && near && near === openBox && this.heldItemType === 'tape') {
+            // only allow taping after box is full
             if (this.itemsStored >= this.maxItemsToStore) {
                 this.boxInteractionTime += deltaSeconds;
 
@@ -730,13 +716,9 @@ createUI() {
                 }
             } else {
                 this.boxInteractionTime = 0;
-                this.interactionPrompt.setText('Fill the box with books first!');
-                this.interactionPrompt.setVisible(true);
             }
         } else {
-            if (this.boxInteractionTime > 0) {
-                this.boxInteractionTime = 0;
-            }
+            this.boxInteractionTime = 0;
         }
 
         // Save previous gesture states

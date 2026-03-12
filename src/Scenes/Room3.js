@@ -405,13 +405,18 @@ class Room3 extends Phaser.Scene {
     }
 
     handleInteractableOverlap(player, interactable) {
-        // Prefer a pickupable interactable over a non-pickupable one (e.g. books over tape
-        // when books are pickupable and tape isn't yet). This prevents adjacent items from
-        // stealing the nearbyInteractable slot when they aren't actionable.
         if (!this.nearbyInteractable) {
             this.nearbyInteractable = interactable;
-        } else if (interactable.canPickup && !this.nearbyInteractable.canPickup) {
+        } else if (interactable.itemType === 'open_box' && this.heldItemType === 'tape') {
+            // When holding tape, always prefer the open_box so the seal timer can fire.
             this.nearbyInteractable = interactable;
+        } else if (interactable.canPickup && !this.nearbyInteractable.canPickup) {
+            // Prefer pickupable items, but don't displace the open_box when holding tape.
+            const holdingTape = this.heldItemType === 'tape';
+            const currentIsBox = this.nearbyInteractable.itemType === 'open_box';
+            if (!(holdingTape && currentIsBox)) {
+                this.nearbyInteractable = interactable;
+            }
         }
     }
 
@@ -648,8 +653,18 @@ class Room3 extends Phaser.Scene {
             }
         }
 
-        // --- TAPE THE BOX (hold near open_box) ---
-        if (!this.boxSealed && openBox && near && near === openBox && this.heldItemType === 'tape') {
+        // --- TAPE THE BOX (distance-based, not overlap-based) ---
+        // Use a direct distance check so the timer isn't reset by missed overlap frames.
+        const TAPE_RADIUS = 32;
+        const nearBox = openBox && this.heldItemType === 'tape' && !this.boxSealed;
+        const inTapeRange = nearBox && (
+            Phaser.Math.Distance.Between(
+                this.player.x, this.player.y,
+                openBox.x, openBox.y
+            ) < TAPE_RADIUS
+        );
+
+        if (inTapeRange) {
             if (this.itemsStored >= this.maxItemsToStore) {
                 this.boxInteractionTime += deltaSeconds;
 
@@ -663,9 +678,13 @@ class Room3 extends Phaser.Scene {
                 }
             } else {
                 this.boxInteractionTime = 0;
+                this.interactionPrompt.setText('Fill the box with books first!');
+                this.interactionPrompt.setVisible(true);
             }
         } else {
-            this.boxInteractionTime = 0;
+            if (this.boxInteractionTime > 0) {
+                this.boxInteractionTime = 0;
+            }
         }
 
         // Save previous gesture states
@@ -751,7 +770,10 @@ class Room3 extends Phaser.Scene {
         sprite.setPosition(dropX, dropY);
         sprite.setVisible(true);
         sprite.canPickup = this.isPickupableType(sprite.itemType);
-        if (sprite.body) sprite.body.enable = true;
+        if (sprite.body) {
+            sprite.body.enable = true;
+            sprite.refreshBody(); // re-sync static body to new position
+        }
 
         this.heldItemType = null;
         this.heldItemSprite = null;
