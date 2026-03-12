@@ -110,7 +110,7 @@ class CutScene1 extends CutScene {
             nextScene: 'room2',
             sceneNumber: 1,
             imageKey: 'cutscene1',
-            text: 'You finished packing the guest room, it\'s now time to pack your Mother\'s room. \nLet\'s move her room and pack the rest of her items.'
+            text: 'The guest room wasn\'t too bad, I should check on Mom\'s room. \nHopefully her room isn\'t as hard.'
         });
     }
 }
@@ -125,7 +125,7 @@ class CutScene2 extends CutScene {
             nextScene: 'room3',
             sceneNumber: 2,
             imageKey: 'cutscene2',
-            text: 'I guess she did most of the packing herself...\nOnly my room left to pack!'
+            text: 'I guess she did most of the packing herself...\nI should finish up packing my room. \n All of Sam\'s things are already packed up.'
         });
     }
 }
@@ -140,7 +140,7 @@ class CutScene3 extends CutScene {
             nextScene: 'endScreen',
             sceneNumber: 3,
             imageKey: 'endscene',
-            text: 'It\'s time to let the movers in.\nAs you watch the boxes move. It\'s time to leave your home.'
+            text: 'It\'s time to let the movers in.\nIt feels weird seeing the space get emptier.\nIt\'s time to leave your home.'
         });
     }
 }
