@@ -1,0 +1,357 @@
+{ "compressionlevel":-1,
+ "height":12,
+ "infinite":false,
+ "layers":[
+        {
+         "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 92, 93, 94, 93, 94, 93, 94, 95, 0, 0,
+            0, 0, 110, 111, 112, 111, 112, 111, 112, 113, 0, 0,
+            0, 0, 110, 111, 112, 111, 112, 111, 112, 113, 0, 0,
+            0, 0, 110, 111, 112, 111, 112, 111, 112, 113, 0, 0,
+            0, 0, 128, 111, 112, 111, 112, 111, 112, 131, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         "height":12,
+         "id":9,
+         "name":"Floor",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":12,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 109, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         "height":12,
+         "id":13,
+         "name":"Door",
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"door",
+                 "type":"bool",
+                 "value":true
+                }],
+         "type":"tilelayer",
+         "visible":true,
+         "width":12,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 1, 2, 2, 2, 2, 2, 2, 2, 2, 18, 0,
+            0, 127, 20, 21, 22, 21, 22, 21, 22, 23, 144, 0,
+            0, 127, 38, 39, 40, 39, 40, 39, 40, 41, 144, 0,
+            0, 127, 56, 57, 58, 57, 58, 57, 58, 59, 144, 0,
+            0, 127, 74, 75, 76, 75, 76, 75, 76, 77, 144, 0,
+            0, 127, 0, 0, 0, 0, 0, 0, 0, 0, 144, 0,
+            0, 127, 0, 0, 0, 0, 0, 0, 0, 0, 144, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 144, 0,
+            0, 127, 0, 0, 0, 0, 0, 0, 0, 0, 144, 0,
+            0, 127, 0, 0, 0, 0, 0, 0, 0, 0, 144, 0,
+            0, 145, 146, 146, 150, 151, 151, 153, 146, 146, 162, 0],
+         "height":12,
+         "id":10,
+         "name":"Walls",
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"wall",
+                 "type":"bool",
+                 "value":true
+                }],
+         "type":"tilelayer",
+         "visible":true,
+         "width":12,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":15,
+         "name":"Spawn",
+         "objects":[
+                {
+                 "gid":124,
+                 "height":16,
+                 "id":36,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"spawn",
+                         "type":"object",
+                         "value":36
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":false,
+                 "width":16,
+                 "x":47.5642,
+                 "y":144.101
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 256, 0, 0, 194, 195, 464, 4289, 4290, 0, 0,
+            0, 0, 269, 0, 0, 207, 208, 477, 4361, 4362, 0, 0,
+            0, 0, 282, 0, 0, 210, 211, 0, 4433, 4434, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 260, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 286, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         "height":12,
+         "id":11,
+         "name":"Furniture",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":12,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "data":[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 410, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 669, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 682, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 555, 0, 0, 0, 0, 0, 558, 0, 0,
+            0, 0, 0, 568, 0, 0, 0, 0, 0, 571, 0, 0,
+            0, 0, 0, 581, 0, 0, 0, 0, 0, 584, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         "height":12,
+         "id":12,
+         "name":"Furniture2",
+         "opacity":1,
+         "type":"tilelayer",
+         "visible":true,
+         "width":12,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":14,
+         "name":"Objects",
+         "objects":[
+                {
+                 "gid":695,
+                 "height":16,
+                 "id":33,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"itemType",
+                         "type":"string",
+                         "value":"open_box"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":87.8327,
+                 "y":150.969
+                }, 
+                {
+                 "gid":697,
+                 "height":16,
+                 "id":38,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"itemType",
+                         "type":"string",
+                         "value":"books"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":119.859,
+                 "y":167.132
+                }, 
+                {
+                 "gid":696,
+                 "height":16,
+                 "id":37,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"itemType",
+                         "type":"string",
+                         "value":"tape"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":128.742894406548,
+                 "y":117.513875313303
+                }, 
+                {
+                 "gid":697,
+                 "height":16,
+                 "id":39,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"itemType",
+                         "type":"string",
+                         "value":"books"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":55.7711,
+                 "y":118.092
+                }, 
+                {
+                 "gid":697,
+                 "height":16,
+                 "id":40,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"itemType",
+                         "type":"string",
+                         "value":"books"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":79.8835,
+                 "y":174.566
+                }],
+         "opacity":1,
+         "properties":[
+                {
+                 "name":"type",
+                 "type":"string",
+                 "value":"tools"
+                }],
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }],
+ "nextlayerid":19,
+ "nextobjectid":41,
+ "orientation":"orthogonal",
+ "renderorder":"right-down",
+ "tiledversion":"1.11.2",
+ "tileheight":16,
+ "tilesets":[
+        {
+         "columns":18,
+         "firstgid":1,
+         "image":"Top-Down_Retro_Interior\/TopDownHouse_FloorsAndWalls.png",
+         "imageheight":144,
+         "imagewidth":288,
+         "margin":0,
+         "name":"TopDownHouse_FloorsAndWalls",
+         "spacing":0,
+         "tilecount":162,
+         "tileheight":16,
+         "tilewidth":16
+        }, 
+        {
+         "columns":13,
+         "firstgid":163,
+         "image":"Top-Down_Retro_Interior\/TopDownHouse_FurnitureState1.png",
+         "imageheight":288,
+         "imagewidth":208,
+         "margin":0,
+         "name":"TopDownHouse_FurnitureState1",
+         "spacing":0,
+         "tilecount":234,
+         "tileheight":16,
+         "tilewidth":16
+        }, 
+        {
+         "columns":8,
+         "firstgid":397,
+         "image":"Top-Down_Retro_Interior\/TopDownHouse_SmallItems.png",
+         "imageheight":128,
+         "imagewidth":128,
+         "margin":0,
+         "name":"TopDownHouse_SmallItems",
+         "spacing":0,
+         "tilecount":64,
+         "tileheight":16,
+         "tilewidth":16
+        }, 
+        {
+         "columns":13,
+         "firstgid":461,
+         "image":"Top-Down_Retro_Interior\/TopDownHouse_FurnitureState2.png",
+         "imageheight":288,
+         "imagewidth":208,
+         "margin":0,
+         "name":"TopDownHouse_FurnitureState2",
+         "spacing":0,
+         "tilecount":234,
+         "tileheight":16,
+         "tilewidth":16
+        }, 
+        {
+         "columns":4,
+         "firstgid":695,
+         "image":"interactables1.png",
+         "imageheight":16,
+         "imagewidth":64,
+         "margin":0,
+         "name":"interactables",
+         "spacing":0,
+         "tilecount":4,
+         "tileheight":16,
+         "tilewidth":16
+        }, 
+        {
+         "columns":72,
+         "firstgid":699,
+         "image":"Interior Tileset Pack - Essentials\/16x16\/vectoraith_tileset_interior_essentials_MAIN_ATLAS.png",
+         "imageheight":1664,
+         "imagewidth":1152,
+         "margin":0,
+         "name":"vectoraith_tileset_interior_essentials_MAIN_ATLAS",
+         "spacing":0,
+         "tilecount":7488,
+         "tileheight":16,
+         "tilewidth":16
+        }],
+ "tilewidth":16,
+ "type":"map",
+ "version":"1.10",
+ "width":12
+}

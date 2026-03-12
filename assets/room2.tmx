@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="10" height="10" tilewidth="16" tileheight="16" infinite="0" nextlayerid="13" nextobjectid="23">
+ <tileset firstgid="1" name="TopDownHouse_FloorsAndWalls" tilewidth="16" tileheight="16" tilecount="162" columns="18">
+  <image source="Top-Down_Retro_Interior/TopDownHouse_FloorsAndWalls.png" width="288" height="144"/>
+ </tileset>
+ <tileset firstgid="163" name="TopDownHouse_FurnitureState2" tilewidth="16" tileheight="16" tilecount="234" columns="13">
+  <image source="Top-Down_Retro_Interior/TopDownHouse_FurnitureState2.png" width="208" height="288"/>
+ </tileset>
+ <tileset firstgid="397" name="TopDownHouse_FurnitureState1" tilewidth="16" tileheight="16" tilecount="234" columns="13">
+  <image source="Top-Down_Retro_Interior/TopDownHouse_FurnitureState1.png" width="208" height="288"/>
+ </tileset>
+ <tileset firstgid="631" name="interactables1" tilewidth="16" tileheight="16" tilecount="4" columns="4">
+  <image source="interactables1.png" width="64" height="16"/>
+ </tileset>
+ <tileset firstgid="635" name="items" tilewidth="16" tileheight="16" tilecount="64" columns="8">
+  <image source="Top-Down_Retro_Interior/TopDownHouse_SmallItems.png" width="128" height="128"/>
+ </tileset>
+ <tileset firstgid="699" name="vectoraith_tileset_interior_essentials_MAIN_ATLAS" tilewidth="16" tileheight="16" tilecount="7488" columns="72">
+  <image source="Interior Tileset Pack - Essentials/16x16/vectoraith_tileset_interior_essentials_MAIN_ATLAS.png" width="1152" height="1664"/>
+ </tileset>
+ <layer id="8" name="Floor" width="10" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,100,101,102,101,102,101,102,103,0,
+0,118,119,120,119,120,119,120,121,0,
+0,118,119,120,119,120,119,120,121,0,
+0,118,119,120,119,120,119,120,121,0,
+0,136,137,138,119,120,137,138,139,0,
+0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="10" name="Door" width="10" height="10">
+  <properties>
+   <property name="door" type="bool" value="true"/>
+  </properties>
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+109,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="7" name="Walls" width="10" height="10">
+  <properties>
+   <property name="wall" type="bool" value="true"/>
+  </properties>
+  <data encoding="csv">
+1,2,2,2,2,2,2,2,2,18,
+127,24,25,26,25,26,25,26,27,144,
+127,42,43,43,43,44,44,44,45,144,
+127,42,43,44,43,44,43,44,45,144,
+127,0,0,0,0,0,0,0,0,144,
+127,0,0,0,0,0,0,0,0,144,
+127,0,0,0,0,0,0,0,0,144,
+0,0,0,0,0,0,0,0,0,144,
+127,0,0,0,0,0,0,0,0,144,
+145,146,146,146,146,146,146,146,146,162
+</data>
+ </layer>
+ <layer id="6" name="Furniture" width="10" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,220,0,0,0,163,164,4289,4290,0,
+0,233,0,0,0,176,177,4361,4362,0,
+0,246,0,0,0,0,0,4433,4434,0,
+0,0,0,0,0,0,0,0,494,0,
+0,0,0,0,0,405,0,0,507,0,
+0,0,0,0,423,424,425,0,520,0,
+0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="9" name="Furniture2" width="10" height="10">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,648,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,257,0,0,0,0,0,0,0,0,
+0,270,0,0,0,0,0,0,0,0,
+0,283,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,
+0,0,254,255,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="11" name="Spawn"/>
+ <objectgroup id="12" name="Objects">
+  <object id="10" gid="631" x="55.7116" y="119.579" width="16" height="16">
+   <properties>
+    <property name="itemType" value="open_box"/>
+   </properties>
+  </object>
+  <object id="13" gid="632" x="65.0331" y="142.99" width="16" height="16">
+   <properties>
+    <property name="itemType" value="tape"/>
+   </properties>
+  </object>
+  <object id="15" gid="633" x="103.132" y="130.148" width="16" height="16">
+   <properties>
+    <property name="itemType" value="books"/>
+   </properties>
+  </object>
+  <object id="16" gid="633" x="113.225" y="87.3399" width="16" height="16">
+   <properties>
+    <property name="itemType" value="books"/>
+   </properties>
+  </object>
+  <object id="17" gid="633" x="24.9861" y="100.361" width="16" height="16">
+   <properties>
+    <property name="itemType" value="books"/>
+   </properties>
+  </object>
+  <object id="18" gid="633" x="23.9444" y="130.917" width="16" height="16">
+   <properties>
+    <property name="itemType" value="books"/>
+   </properties>
+  </object>
+  <object id="21" gid="633" x="81.9306" y="101.75" width="16" height="16">
+   <properties>
+    <property name="itemType" value="books"/>
+   </properties>
+  </object>
+  <object id="22" gid="633" x="52.4167" y="82.6528" width="16" height="16">
+   <properties>
+    <property name="itemType" value="books"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>
